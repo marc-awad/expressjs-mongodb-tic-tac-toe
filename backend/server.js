@@ -1,57 +1,97 @@
-const { MongoClient } = require("mongodb")
-const express = require("express")
-const PORT = 3001
+const { MongoClient } = require("mongodb");
+const express = require("express");
+const PORT = 3001;
 
-const uri = "mongodb://localhost:27017"
-const client = new MongoClient(uri)
+const uri = "mongodb://localhost:27017";
+const client = new MongoClient(uri);
 
-const database = client.db("gameDatabase")
+const database = client.db("gameDatabase");
 
-const playerCollection = database.collection("players")
-const historyCollection = database.collection("history")
+const playerCollection = database.collection("players");
+const historyCollection = database.collection("history");
 
-const app = express()
-app.use(express.json())
+const app = express();
+app.use(express.json());
 
 // Route GET pour récupérer tous les joueurs
 app.get("/players", async (req, res) => {
-  const result = await playerCollection.find().toArray()
-  res.status(200).json(result)
-})
+  try {
+    const result = await playerCollection.find().toArray();
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de la récupération des joueurs", error });
+  }
+});
+
+// Route GET pour récupérer le leaderboard
+app.get("/leaderboard", async (req, res) => {
+  try {
+    const result = await playerCollection
+      .find({})
+      .sort({ score: -1 })
+      .limit(3)
+      .toArray();
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de la récupération du leaderboard", error });
+  }
+});
 
 // Route POST pour ajouter un joueur
 app.post("/players", async (req, res) => {
-  const player = req.body
-  await playerCollection.insertOne(player)
-  res.status(200).json(player)
-})
-
-// Route DELETE pour supprimer un joueur par son prénom
-app.delete("/players", async (req, res) => {
-  const playerName = req.body.prenom // Assure-toi que le nom est passé dans `prenom`
-  const result = await playerCollection.deleteOne({ prenom: playerName })
-
-  if (result.deletedCount === 0) {
-    return res
-      .status(404)
-      .json({ message: "Aucun joueur trouvé avec ce prénom" })
+  const player = req.body;
+  try {
+    await playerCollection.insertOne(player);
+    res.status(201).json(player);
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de l'ajout du joueur", error });
   }
+});
 
-  res.status(200).json({ message: `Joueur ${playerName} supprimé avec succès` })
-})
-
+// Route PATCH pour mettre à jour le score d'un joueur
 app.patch("/players", async (req, res) => {
-  const playerName = req.body
+  const { name } = req.body;
 
-  const result = await playerCollection.updateOne(
-    { name: playerName },
-    { $inc: { score: 1 } }
-  )
-})
+  try {
+    const result = await playerCollection.updateOne(
+      { name },
+      { $inc: { score: 1 } }
+    );
 
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ message: "Joueur non trouvé" });
+    }
 
+    res.status(200).json({ message: "Score mis à jour" });
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de la mise à jour du score", error });
+  }
+});
 
-// Start the server
+// Route GET pour récupérer l'historique d'un joueur
+app.get("/history", async (req, res) => {
+  const { name } = req.query; // Utilisation de req.query pour récupérer le nom
+
+  try {
+    const result = await historyCollection.find({ name }).toArray();
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de la récupération de l'historique", error });
+  }
+});
+
+// Route POST pour ajouter un document à l'historique
+app.post("/history", async (req, res) => {
+  const newDocument = req.body;
+  try {
+    await historyCollection.insertOne(newDocument);
+    res.status(201).json(newDocument);
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de l'ajout à l'historique", error });
+  }
+});
+
+// Démarrer le serveur
 app.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}: http://localhost:${PORT}/`)
-})
+  console.log(`Serveur démarré sur le port ${PORT}: http://localhost:${PORT}/`);
+});
