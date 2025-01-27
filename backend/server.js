@@ -40,6 +40,17 @@ app.delete("/players", async (req, res) => {
   res.status(200).json({ message: `Joueur ${playerName} supprimé avec succès` })
 })
 
+app.patch("/players", async (req, res) => {
+  const playerName = req.body
+
+  const result = await playerCollection.updateOne(
+    { name: playerName },
+    { $inc: { score: 1 } }
+  )
+})
+
+
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}: http://localhost:${PORT}/`)

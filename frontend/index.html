@@ -1,13 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tic Tac Toe</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="tictactoe_image.png" type="image/png" />
+  </head>
+  <body>
     <h1>Tic Tac Toe</h1>
+    <div id="leaderBoardDiv">
+      <h2>Leaderboard (Top3)</h2>
+      <ul></ul>
+    </div>
+    <div id="usernameDiv">
+      <h2>Nom du joueur</h2>
+      <input type="text" placeholder="Votre prénom" />
+      <button>Commencer</button>
+    </div>
+    <div id="gameHistory">
+      <h2>Historique des parties</h2>
+      <button>Voir l'historique</button>
+    </div>
+    <div id="gameBoardDiv">
+      <h2>Plateau de jeu</h2>
+      <div id="gameBoard">
+        <button class="button"></button>
+        <button class="button"></button>
+        <button class="button"></button>
+        <button class="button"></button>
+        <button class="button"></button>
+        <button class="button"></button>
+        <button class="button"></button>
+        <button class="button"></button>
+        <button class="button"></button>
+      </div>
+      <p id="turn">Votre tour de jouer !</p>
+      <button>Nouvelle partie</button>
+    </div>
     <script src="app.js"></script>
-</body>
+  </body>
 </html>
