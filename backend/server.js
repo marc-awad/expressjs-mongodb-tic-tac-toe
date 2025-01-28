@@ -7,7 +7,7 @@ const PORT = 3001
 const uri = "mongodb://localhost:27017"
 const client = new MongoClient(uri)
 
-const database = client.db("gameDatabase")
+const database = client.db("tic_tac_toe_db")
 
 const playerCollection = database.collection("players")
 const historyCollection = database.collection("history")
@@ -57,7 +57,7 @@ app.post("/players", async (req, res) => {
 
 // Route PATCH pour mettre à jour le score d'un joueur
 app.patch("/players", async (req, res) => {
-  const { name } = req.body
+  const name = req.query.name
 
   try {
     const result = await playerCollection.updateOne(
