@@ -1,9 +1,10 @@
 var currentPlayer
 
 const leaderBoardDiv = document.getElementById("leaderBoardDiv")
-const historyDiv = document.getElementById("gameHistory")
+let historyDiv = document.getElementById("historyDiv")
 const gameBoardDiv = document.getElementById("gameBoardDiv")
 const startButton = document.getElementById("startButton")
+const showHistoryButton = document.getElementById("showHistoryButton")
 
 const API_URL = "http://localhost:3001"
 const PLAYER_URL = `${API_URL}/players`
@@ -48,6 +49,13 @@ async function searchPlayerFromName(playerName) {
     currentPlayer = newPlayer
     console.log("Joueur créé :", newPlayer)
   }
+  showingGameBoardAndHistory()
+}
+
+async function getPlayerHistory(playerName) {
+  const result = await fetch(`${HISTORY_URL}?name=${playerName}`)
+  const gamesHistory = await result.json()
+  return gamesHistory
 }
 
 function createPlayerBoard(playerNumber, playerName, playerScore) {
@@ -67,6 +75,32 @@ async function fetchingLeaderBoard() {
     playersCount++
   })
 }
+
+function createHistoryCard(history) {
+  let history_html = ""
+
+  history.forEach((game) => {
+    history_html += `
+      <div class="history-card">
+        <h3>Joueur : ${game.name}</h3>
+        <div class="board">
+          <p>${game.board.ligne1}</p>
+          <p>${game.board.ligne2}</p>
+          <p>${game.board.ligne3}</p>
+        </div>
+        <p>Victoire : ${game.victory ? "Oui" : "Non"}</p>
+      </div>
+    `
+  })
+
+  return history_html
+}
+
+showHistoryButton.addEventListener("click", async () => {
+  const history = await getPlayerHistory(currentPlayer.name)
+  // console.log(createHistoryCard(history))
+  historyDiv.innerHTML += createHistoryCard(history)
+})
 
 fetchingLeaderBoard()
 hidingGameBoardAndHistory()

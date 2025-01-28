@@ -79,18 +79,15 @@ app.patch("/players", async (req, res) => {
 
 // Route GET pour récupérer l'historique d'un joueur
 app.get("/history", async (req, res) => {
-  const { name } = req.query // Utilisation de req.query pour récupérer le nom
-
+  const name = req.query.name
   try {
     const result = await historyCollection.find({ name }).toArray()
     res.status(200).json(result)
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Erreur lors de la récupération de l'historique",
-        error,
-      })
+    res.status(500).json({
+      message: "Erreur lors de la récupération de l'historique",
+      error,
+    })
   }
 })
 
