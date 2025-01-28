@@ -89,9 +89,7 @@ function createHistoryCard(history) {
   history.forEach((game) => {
     history_html += `
       <div class="history-card">
-          <h3>Partie #${historyCount} - ${
-      game.victory ? "Victoire" : "Défaite"
-    }</h3>
+          <h3>Partie #${historyCount} - ${game.gamestate}</h3>
           <h3>Plateau final : </h3>
           <p>${game.board.ligne1}</p>
           <p>------------</p>
@@ -122,17 +120,19 @@ buttons.forEach((button, index) => {
         turnDisplay.textContent = `Le joueur ${currentTurnText} a gagné!`
         winning = currentTurnText === currentPlayer.name ? true : false
         disableAllButtons()
-        saveGameResult(winning)
+        saveGameResult(1)
       } else {
         currentTurn = currentTurn === "X" ? "O" : "X"
         currentTurnText = currentTurn === "X" ? currentPlayer.name : "ROBOT"
         turnDisplay.textContent = `Tour de ${currentTurnText}`
+        robotPlay()
       }
     }
   })
 })
 
-async function saveGameResult(victory) {
+// 1 victoire     0 draw    -1 loose
+async function saveGameResult(gameState) {
   const boardState = {
     ligne1: `${gameBoard[0] || ""}|${gameBoard[1] || ""}|${gameBoard[2] || ""}`,
     ligne2: `${gameBoard[3] || ""}|${gameBoard[4] || ""}|${gameBoard[5] || ""}`,
@@ -142,12 +142,10 @@ async function saveGameResult(victory) {
   const gameData = {
     name: currentPlayer.name,
     board: boardState,
-    victory: victory,
+    gameState: gameState,
   }
-  console.log(gameData)
-
   addHistoryDB(gameData)
-  if (victory) updatePlayerScore(currentPlayer.name)
+  if (gameState == 1) updatePlayerScore(currentPlayer.name)
 }
 
 async function addHistoryDB(gameData) {
@@ -204,6 +202,30 @@ resetButton.addEventListener("click", () => {
     button.disabled = false
   })
 })
+function robotPlay() {
+  const emptyIndices = gameBoard
+    .map((value, index) => (value === null ? index : null))
+    .filter((index) => index !== null)
+
+  if (emptyIndices.length === 0) return
+
+  const randomIndex =
+    emptyIndices[Math.floor(Math.random() * emptyIndices.length)]
+
+  gameBoard[randomIndex] = currentTurn
+  buttons[randomIndex].textContent = currentTurn
+  buttons[randomIndex].disabled = true
+
+  if (checkWinner()) {
+    turnDisplay.textContent = `Le robot a gagné!`
+    disableAllButtons()
+    saveGameResult(-1)
+  } else {
+    currentTurn = currentTurn === "X" ? "O" : "X"
+    currentTurnText = currentTurn === "X" ? currentPlayer.name : "ROBOT"
+    turnDisplay.textContent = `Tour de ${currentTurnText}`
+  }
+}
 
 fetchingLeaderBoard()
 hidingGameBoardAndHistory()
