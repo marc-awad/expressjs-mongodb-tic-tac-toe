@@ -1,6 +1,9 @@
 var currentPlayer
 var currentTurn = "X"
 var winning = false
+var isActiveHistory = false
+
+const parentHistoryDiv = document.getElementById("parentHistoryDiv")
 const leaderBoardDiv = document.getElementById("leaderBoardDiv")
 let historyDiv = document.getElementById("historyDiv")
 const gameBoardDiv = document.getElementById("gameBoardDiv")
@@ -19,12 +22,12 @@ const LEADERBOARD_URL = `${API_URL}/leaderboard`
 
 function hidingGameBoardAndHistory() {
   gameBoardDiv.style.display = "none"
-  historyDiv.style.display = "none"
+  parentHistoryDiv.style.display = "none"
 }
 
 function showingGameBoardAndHistory() {
   gameBoardDiv.style.display = "block"
-  historyDiv.style.display = "block"
+  parentHistoryDiv.style.display = "block"
 }
 
 startButton.addEventListener("click", () => {
@@ -118,10 +121,39 @@ function createHistoryCard(history) {
   return history_html
 }
 
+async function showHistory() {
+  if (!isActiveHistory) {
+    historyDiv.style.display = "block"
+    const history = await getPlayerHistory(currentPlayer.name)
+    // console.log(createHistoryCard(history))
+    historyDiv.innerHTML += createHistoryCard(history)
+    historyDiv.appendChild(clearHistoryButton)
+    historyDiv.appendChild(reloadHistoryButton)
+    isActiveHistory = true
+  }
+}
 showHistoryButton.addEventListener("click", async () => {
-  const history = await getPlayerHistory(currentPlayer.name)
-  // console.log(createHistoryCard(history))
-  historyDiv.innerHTML += createHistoryCard(history)
+  await showHistory()
+})
+const clearHistoryButton = document.createElement("button")
+clearHistoryButton.textContent = "Fermer l'historique"
+clearHistoryButton.id = "clearHistoryButton"
+
+function clearHistory() {
+  historyDiv.innerHTML = ""
+  historyDiv.style.display = "none"
+  isActiveHistory = false
+}
+
+clearHistoryButton.addEventListener("click", clearHistory)
+
+const reloadHistoryButton = document.createElement("button")
+reloadHistoryButton.textContent = "Actualiser l'historique"
+reloadHistoryButton.id = "reloadHistoryButton"
+
+reloadHistoryButton.addEventListener("click", () => {
+  clearHistory()
+  showHistory()
 })
 
 buttons.forEach((button, index) => {
@@ -144,9 +176,8 @@ buttons.forEach((button, index) => {
           saveGameResult(0) // Enregistrer le match nul
         } else {
           currentTurn = currentTurn === "X" ? "O" : "X"
-          currentTurnText = currentTurn === "X" ? currentPlayer.name : "ROBOT"
-          turnDisplay.textContent = `Tour de ${currentTurnText}`
-          robotPlay()
+          turnDisplay.textContent = `Tour du robot...`
+          setTimeout(robotPlay, 1000)
         }
       }
     }
@@ -251,3 +282,5 @@ function robotPlay() {
 
 fetchingLeaderBoard()
 hidingGameBoardAndHistory()
+
+historyDiv.style.display = "none"
