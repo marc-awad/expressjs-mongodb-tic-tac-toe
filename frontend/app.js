@@ -86,10 +86,24 @@ async function fetchingLeaderBoard() {
 function createHistoryCard(history) {
   let history_html = ""
   let historyCount = 1
+  let victoryOrDrawOrLoose = ""
   history.forEach((game) => {
+    switch (game.gamestate) {
+      case 1:
+        victoryOrDrawOrLoose = "Victoire"
+        break
+      case 0:
+        victoryOrDrawOrLoose = "Match Nul"
+        break
+      case -1:
+        victoryOrDrawOrLoose = "Défaite"
+        break
+      default:
+        victoryOrDrawOrLoose = "Résultat Inconnu"
+    }
     history_html += `
       <div class="history-card">
-          <h3>Partie #${historyCount} - ${game.gamestate}</h3>
+          <h3>Partie #${historyCount} - ${victoryOrDrawOrLoose}</h3>
           <h3>Plateau final : </h3>
           <p>${game.board.ligne1}</p>
           <p>------------</p>
@@ -116,16 +130,24 @@ buttons.forEach((button, index) => {
       gameBoard[index] = currentTurn
       button.textContent = currentTurn
       button.disabled = true
+
       if (checkWinner()) {
         turnDisplay.textContent = `Le joueur ${currentTurnText} a gagné!`
         winning = currentTurnText === currentPlayer.name ? true : false
         disableAllButtons()
         saveGameResult(1)
       } else {
-        currentTurn = currentTurn === "X" ? "O" : "X"
-        currentTurnText = currentTurn === "X" ? currentPlayer.name : "ROBOT"
-        turnDisplay.textContent = `Tour de ${currentTurnText}`
-        robotPlay()
+        // Vérification du match nul
+        if (gameBoard.every((cell) => cell !== null)) {
+          turnDisplay.textContent = `Match nul!`
+          disableAllButtons()
+          saveGameResult(0) // Enregistrer le match nul
+        } else {
+          currentTurn = currentTurn === "X" ? "O" : "X"
+          currentTurnText = currentTurn === "X" ? currentPlayer.name : "ROBOT"
+          turnDisplay.textContent = `Tour de ${currentTurnText}`
+          robotPlay()
+        }
       }
     }
   })
@@ -142,7 +164,7 @@ async function saveGameResult(gameState) {
   const gameData = {
     name: currentPlayer.name,
     board: boardState,
-    gameState: gameState,
+    gamestate: gameState,
   }
   addHistoryDB(gameData)
   if (gameState == 1) updatePlayerScore(currentPlayer.name)
