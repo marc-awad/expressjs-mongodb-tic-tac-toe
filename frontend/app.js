@@ -1,10 +1,13 @@
 var currentPlayer
-
+var currentTurn = "X"
 const leaderBoardDiv = document.getElementById("leaderBoardDiv")
 let historyDiv = document.getElementById("historyDiv")
 const gameBoardDiv = document.getElementById("gameBoardDiv")
 const startButton = document.getElementById("startButton")
 const showHistoryButton = document.getElementById("showHistoryButton")
+const buttons = document.querySelectorAll("#gameBoard .button")
+const turnDisplay = document.getElementById("turn")
+const resetButton = document.querySelector("#gameBoardDiv button:last-of-type")
 
 const API_URL = "http://localhost:3001"
 const PLAYER_URL = `${API_URL}/players`
@@ -102,5 +105,17 @@ showHistoryButton.addEventListener("click", async () => {
   historyDiv.innerHTML += createHistoryCard(history)
 })
 
+buttons.forEach((button, index) => {
+  button.addEventListener("click", () => {
+    if (!gameBoard[index]) {
+      gameBoard[index] = currentTurn
+      button.textContent = currentTurn
+      button.disabled = true
+      currentTurn = currentTurn === "X" ? "O" : "X"
+      currentTurnText = currentTurn === "X" ? currentPlayer.name : "ROBOT"
+      turnDisplay.textContent = `Tour de ${currentTurnText}`
+    }
+  })
+})
 fetchingLeaderBoard()
 hidingGameBoardAndHistory()
